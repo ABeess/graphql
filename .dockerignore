@@ -1,0 +1,11 @@
+node_modules
+.dockerignore
+.vscode
+.gitignore
+.docker
+.gitlab
+.git
+.github
+README.md
+LICENSE
+*.DS_Store

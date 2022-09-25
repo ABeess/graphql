@@ -1,0 +1,22 @@
+name: server
+on:
+  push:
+    branches: ['production']
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH Remote google cloud and run Docker
+        uses: appleboy/ssh-action@v0.1.2
+        with:
+          key: ${{secrets.SSH_PRIVATE_KEY}}
+          host: ${{secrets.GOOGLE_CLOUD_HOST}}
+          username: ${{secrets.SSH_USER_NAME}}
+          script: |
+            cd /home/github/server
+            sudo rm -rf /home/github/server/dist
+            sudo git checkout production
+            sudo git pull
+            sudo docker-compose rm -s -v -f server
+            sudo docker-compose up -d
+            
