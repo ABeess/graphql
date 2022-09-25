@@ -1,7 +1,7 @@
 import JWT, { Secret } from 'jsonwebtoken';
 
 interface IData {
-  sub: number;
+  sub?: number;
   role: string;
   [key: string]: any;
 }

@@ -1,12 +1,14 @@
-import { Arg, Mutation, Query, Resolver } from 'type-graphql';
+import { Arg, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
 import { Image, Post } from '../entities';
 import { PostInput } from '../inputs/CreateBookInput';
 import { ImageInput } from '../inputs/ImageInput';
+// import { authentication } from '../middleware/authentication';
 import { PostResponse } from '../types/response';
 
 @Resolver()
 export default class PostResolver {
   @Query(() => [Post])
+  // @UseMiddleware(authentication)
   async posts(): Promise<Post[]> {
     return await Post.find({
       relations: ['image', 'user'],

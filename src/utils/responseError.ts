@@ -8,11 +8,24 @@ interface ErrorResponse {
 
 export const generateError = (error: ApolloError): ErrorResponse => {
   try {
-    const codeString = error.extensions.code;
-    return {
-      code: getStatusCode(codeString),
-      message: error.message || 'Interval server error' + error,
-    };
+    switch (error.message) {
+      case 'jwt expired':
+        return {
+          code: 401,
+          message: 'JWT Expired',
+        };
+      case 'invalid signature':
+        return {
+          code: 401,
+          message: 'invalid Token',
+        };
+      default:
+        const codeString = error.extensions.code;
+        return {
+          code: getStatusCode(codeString),
+          message: error.message || 'Interval server error' + error,
+        };
+    }
   } catch (error) {
     return {
       code: 500,

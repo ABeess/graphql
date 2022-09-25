@@ -5,7 +5,6 @@ import {
   PubSubEngine,
   Query,
   Resolver,
-  ResolverFilterData,
   Root,
   Subscription,
 } from 'type-graphql';
@@ -25,10 +24,9 @@ export default class CommentResolver {
   }
 
   @Subscription({
-    // topics: 'comment-post',
-    topics: ({ args }: ResolverFilterData) => args.topic,
+    topics: 'comment-post',
   })
-  listenCommentPost(@Arg('topic') _topic: string, @Root() comment: Comment): Comment {
+  listenCommentPost(@Root() comment: Comment): Comment {
     console.log(comment);
     return comment;
   }
@@ -52,8 +50,7 @@ export default class CommentResolver {
   @Mutation(() => CommentResponse)
   async createComment(
     @PubSub() pubsub: PubSubEngine,
-    @Arg('commentInput') commentInput: CommentInput,
-    @Arg('topic') topic: string
+    @Arg('commentInput') commentInput: CommentInput
   ): Promise<CommentResponse> {
     try {
       const newComment = Comment.create({
@@ -62,7 +59,7 @@ export default class CommentResolver {
 
       await newComment.save();
 
-      await pubsub.publish(topic, newComment);
+      await pubsub.publish('comment-post', newComment);
 
       return {
         code: 200,
@@ -113,8 +110,6 @@ export default class CommentResolver {
       order: {
         createdAt: 'DESC',
       },
-      skip: 0,
-      take: 5,
     });
 
     return commentList;

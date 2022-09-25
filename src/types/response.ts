@@ -1,12 +1,13 @@
 import { Field, InterfaceType, ObjectType } from 'type-graphql';
 import { Post, User } from '../entities';
+import Comment from '../entities/Comment';
 
 @InterfaceType()
 export abstract class BaseResponse {
-  @Field(() => Number)
+  @Field(() => Number, { nullable: true })
   code: number;
 
-  @Field(() => String)
+  @Field(() => String, { nullable: true })
   message: string;
 }
 
@@ -45,4 +46,22 @@ export class NotificationResponse implements BaseResponse {
 
   @Field()
   notification: string;
+}
+
+@ObjectType({ implements: BaseResponse })
+export class CommentResponse implements BaseResponse {
+  code: number;
+  message: string;
+
+  @Field(() => Comment, { nullable: true })
+  comment?: Comment;
+}
+
+@ObjectType({ implements: BaseResponse })
+export class AllCommentResponse implements BaseResponse {
+  code: number;
+  message: string;
+
+  @Field(() => [Comment!]!, { nullable: true })
+  comment?: Comment[];
 }

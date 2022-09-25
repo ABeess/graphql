@@ -1,5 +1,5 @@
 import { Field, ObjectType } from 'type-graphql';
-import { Column, Entity, JoinColumn, ManyToMany, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import Model from './Model';
 import Post from './Post';
 import User from './User';
@@ -7,18 +7,20 @@ import User from './User';
 @Entity()
 @ObjectType()
 export default class Comment extends Model {
-  @Field(() => User)
-  @OneToMany(() => User, (user) => user.comment)
+  @Field(() => User, { nullable: true })
+  @ManyToOne(() => User, (user) => user.comment)
+  @JoinColumn()
   user: User;
 
-  @Field(() => User)
-  @OneToMany(() => User, (user) => user.parent)
-  parent: User;
+  // @Field({ nullable: true })
+  // @ManyToOne(() => Comment, (comment) => comment.id)
+  // @JoinColumn({ name: 'reply' })
+  // reply?: string;
 
-  @Field(() => [Post])
-  @ManyToMany(() => Post, (post) => post.comment)
+  @Field(() => Post)
+  @ManyToOne(() => Post, (post) => post.comment)
   @JoinColumn()
-  post: Post[];
+  post: Post;
 
   @Field()
   @Column()

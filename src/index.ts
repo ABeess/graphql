@@ -1,24 +1,23 @@
-import 'dotenv/config';
-import 'reflect-metadata';
 import {
   ApolloServerPluginDrainHttpServer,
-  ApolloServerPluginLandingPageGraphQLPlayground,
   ApolloServerPluginLandingPageLocalDefault,
 } from 'apollo-server-core';
+import 'dotenv/config';
+import 'reflect-metadata';
 // import { ApolloServer } from 'apollo-server-express';
 import { ApolloServer } from 'apollo-server-express';
+import connectRedis from 'connect-redis';
+import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
-import connectRedis from 'connect-redis';
+import { useServer } from 'graphql-ws/lib/use/ws';
 import { createServer } from 'http';
 import { buildSchema } from 'type-graphql';
+import { WebSocketServer } from 'ws';
 import { AppDataSource } from './lib/dataSource';
+import rootRouter from './routes/rootRouter';
 import { Context } from './types';
 import { redis } from './utils/redis';
-import cors from 'cors';
-import rootRouter from './routes/rootRouter';
-import { WebSocketServer } from 'ws';
-import { useServer } from 'graphql-ws/lib/use/ws';
 
 const main = async (): Promise<void> => {
   // const upload = multer({ storage: multer.diskStorage({}) });

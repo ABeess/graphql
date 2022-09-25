@@ -6,7 +6,7 @@ export class CommentPayload {
 }
 
 @ObjectType()
-export class CommentResponse {
+export class CommentResponseTest {
   @Field()
   message?: string;
 

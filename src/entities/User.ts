@@ -49,9 +49,7 @@ export default class User extends Model {
   @OneToMany(() => Post, (post) => post.user, { nullable: true })
   posts: Post[];
 
-  @ManyToMany(() => Comment, (comment) => comment.user, { nullable: true })
-  comment: Comment[];
-
-  @ManyToMany(() => Comment, (comment) => comment.parent, { nullable: true })
-  parent: Comment[];
+  @Field(() => Comment, { nullable: true })
+  @OneToOne(() => Comment, (comment) => comment.user, { nullable: true })
+  comment: Comment;
 }
