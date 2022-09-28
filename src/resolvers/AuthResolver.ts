@@ -1,12 +1,12 @@
 import argon2 from 'argon2';
 import { verify } from 'jsonwebtoken';
 import { Arg, Ctx, Mutation, Query, Resolver } from 'type-graphql';
-import { User } from '../entities';
+import { User } from '../entities/index';
 import { LoginInput } from '../inputs/LoginInput';
 import { RegisterInput } from '../inputs/RegisterInput';
 import { Conflict, NotfoundError, UnauthorizedError } from '../lib/errorHandle';
-import { Context, UseJWTPayload } from '../types';
-import { UserResponse } from '../types/response';
+import { Context, UseJWTPayload } from '../types/index';
+import { UserLogoutResponse, UserResponse } from '../types/response';
 import { generateToken } from '../utils/jwtManger';
 import { generateError } from '../utils/responseError';
 
@@ -76,28 +76,39 @@ export default class UserResolver {
     }
   }
 
-  @Query(() => UserResponse)
+  @Mutation(() => UserResponse)
   async refreshToken(@Ctx() { req }: Context): Promise<UserResponse> {
     try {
-      const authorization = req.header('Authorization');
-      const accessToken = authorization && authorization.split(' ')[1];
+      const refreshToken = req.session.refreshToken;
 
-      if (!accessToken) {
+      if (!refreshToken) {
         throw new UnauthorizedError('You are not authenticated');
       }
 
-      const payload = verify(accessToken, process.env.ACCESS_TOKEN_SECRET) as UseJWTPayload;
+      const payload = verify(refreshToken, process.env.REFRESH_TOKEN_SECRET) as UseJWTPayload;
+
+      if (!payload) {
+        throw new UnauthorizedError('Token is not valid');
+      }
+
+      const existingUser = await User.findOneBy({
+        id: payload.sub,
+      });
+
+      if (!existingUser) {
+        throw new UnauthorizedError('You are not authenticated');
+      }
 
       const newAccessToken = generateToken({
         data: {
-          sub: payload?.sub as number,
+          sub: payload?.sub as string,
         },
         form: 'accessToken',
       });
 
       const newRefreshToken = generateToken({
         data: {
-          sub: payload.sub as number,
+          sub: payload.sub as string,
         },
         form: 'refreshToken',
       });
@@ -108,6 +119,23 @@ export default class UserResolver {
         code: 200,
         message: 'Refresh  accessToken',
         accessToken: newAccessToken,
+      };
+    } catch (error) {
+      return generateError(error);
+    }
+  }
+  @Mutation(() => UserLogoutResponse)
+  async logout(@Ctx() { res, req }: Context): Promise<UserLogoutResponse> {
+    try {
+      res.clearCookie(process.env.SESSION_NAME);
+      req.session.destroy((err) => {
+        if (err) {
+          throw new UnauthorizedError(err.message);
+        }
+      });
+      return {
+        code: 200,
+        message: 'User logout',
       };
     } catch (error) {
       return generateError(error);

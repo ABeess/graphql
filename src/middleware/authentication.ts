@@ -10,10 +10,12 @@ export const authentication: MiddlewareFn<Context> = ({ context }, next) => {
     if (!accessToken) {
       throw new AuthenticationError('Not authenticated to perform request');
     }
-    const payload = verify(accessToken, process.env.ACCESS_TOKEN_SECRET as Secret) as UseJWTPayload;
-
-    context.user = payload;
-    console.log('payload', payload);
+    verify(accessToken, process.env.ACCESS_TOKEN_SECRET as Secret, (error, payload) => {
+      if (error) {
+        throw new AuthenticationError(error.message || 'Interval server');
+      }
+      context.user = payload as UseJWTPayload;
+    });
     return next();
   } catch (error) {
     throw new AuthenticationError(`Error AuthenticationError: ${error}`);

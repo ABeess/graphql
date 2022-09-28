@@ -2,13 +2,13 @@ import { Field, ID, ObjectType } from 'type-graphql';
 
 @ObjectType()
 export class Notification {
-  @Field((type) => ID)
+  @Field(() => ID)
   id: number;
 
   @Field({ nullable: true })
   message?: string;
 
-  @Field((type) => Date)
+  @Field(() => Date)
   date: Date;
 }
 

@@ -3,6 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import Comment from './Comment';
 import Image from './Image';
 import Model from './Model';
+import PostLike from './PostLike';
 import User from './User';
 
 @ObjectType()
@@ -13,7 +14,7 @@ export default class Post extends Model {
   image: Image[];
 
   @Field(() => User)
-  @ManyToOne(() => User, (user) => user.posts, { nullable: true })
+  @ManyToOne(() => User, (user) => user.posts, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 
@@ -41,4 +42,8 @@ export default class Post extends Model {
   @Field(() => [Comment])
   @OneToMany(() => Comment, (comment) => comment.post)
   comment: Comment[];
+
+  @Field(() => [PostLike], { nullable: true })
+  @OneToMany(() => PostLike, (postLike) => postLike.post)
+  like: PostLike[];
 }

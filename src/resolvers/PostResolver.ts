@@ -2,22 +2,48 @@ import { Arg, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
 import { Image, Post } from '../entities';
 import { PostInput } from '../inputs/CreateBookInput';
 import { ImageInput } from '../inputs/ImageInput';
-// import { authentication } from '../middleware/authentication';
-import { PostResponse } from '../types/response';
+import { QueryInput } from '../inputs/QueryInput';
+import { authentication } from '../middleware/authentication';
+import { AllPostResponse, PostResponse } from '../types/response';
+import { queryGenerate } from '../utils/queryGenerate';
 
 @Resolver()
 export default class PostResolver {
-  @Query(() => [Post])
-  // @UseMiddleware(authentication)
-  async posts(): Promise<Post[]> {
-    return await Post.find({
+  @Query(() => AllPostResponse)
+  @UseMiddleware(authentication)
+  async postsQuery(
+    @Arg('query', { nullable: true }) query: QueryInput,
+    @Arg('userId', { nullable: true }) userId?: string
+  ): Promise<AllPostResponse> {
+    const { limit, page, skip } = queryGenerate(query);
+
+    const [posts, count] = await Post.findAndCount({
+      ...(userId && {
+        where: {
+          user: { id: userId },
+        },
+      }),
       relations: ['image', 'user'],
+      loadRelationIds: {
+        relations: ['comment'],
+      },
       order: {
         createdAt: 'DESC',
       },
+      take: limit,
+      skip: skip,
     });
+
+    return {
+      posts: posts,
+      totalCount: count,
+      totalPage: Math.ceil(count / Number(limit)),
+      perPage: limit,
+      page: page,
+    };
   }
   @Mutation(() => PostResponse)
+  @UseMiddleware(authentication)
   async createPost(
     @Arg('postInput') postInput: PostInput,
     @Arg('imageInput', () => [ImageInput]) imageInput: ImageInput[]

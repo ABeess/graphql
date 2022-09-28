@@ -1,12 +1,8 @@
-import { Field, ID, ObjectType } from 'type-graphql';
+import { Field, ObjectType } from 'type-graphql';
 import { BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @ObjectType()
 export default class Model extends BaseEntity {
-  @Field(() => ID)
-  @PrimaryGeneratedColumn('rowid')
-  id: number;
-
   @Field()
   @CreateDateColumn()
   createdAt: string;
@@ -14,4 +10,8 @@ export default class Model extends BaseEntity {
   @Field()
   @UpdateDateColumn()
   updatedAt: string;
+
+  @Field({ nullable: true })
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 }

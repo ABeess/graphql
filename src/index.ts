@@ -29,14 +29,14 @@ const main = async (): Promise<void> => {
 
   app.use(
     cors({
-      origin: ['http://localhost:3090'],
+      origin: ['http://localhost:3090', 'http://localhost:3030'],
       credentials: true,
     })
   );
 
   app.use(
     session({
-      name: 'session-cookie',
+      name: process.env.SESSION_NAME,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 7,
         httpOnly: true,
@@ -61,7 +61,15 @@ const main = async (): Promise<void> => {
     path: '/graphql',
   });
 
-  const serverCleanup = useServer({ schema }, wsServer);
+  const serverCleanup = useServer(
+    {
+      schema,
+      onConnect: async (ctx) => {
+        console.log(ctx.connectionParams);
+      },
+    },
+    wsServer
+  );
 
   const apolloServer = new ApolloServer({
     schema,

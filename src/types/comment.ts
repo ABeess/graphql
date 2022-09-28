@@ -1,8 +1,10 @@
 import { Field, ObjectType } from 'type-graphql';
+import Comment from '../entities/Comment';
 
 export class CommentPayload {
+  type: string;
   @Field()
-  message: string;
+  comment: Comment;
 }
 
 @ObjectType()

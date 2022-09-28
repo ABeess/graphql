@@ -26,6 +26,14 @@ export class BadRequestRest extends MyError {
   }
 }
 
+export class UnauthorizedRest extends MyError {
+  public static message = 'Unauthorized';
+  public static readonly code = StatusCodes.UNAUTHORIZED;
+  constructor(message: string) {
+    super(message, UnauthorizedRest.code);
+  }
+}
+
 export class Conflict extends ApolloError {
   constructor(message: string) {
     super(message, 'Conflict');

@@ -1,8 +1,9 @@
 import { Field, ObjectType } from 'type-graphql';
-import { Column, Entity, ManyToMany, OneToMany, OneToOne } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import Comment from './Comment';
 import Model from './Model';
 import Post from './Post';
+import PostLike from './PostLike';
 import UserProfile from './UserProfile';
 
 @Entity('users')
@@ -36,7 +37,10 @@ export default class User extends Model {
   provider: string;
 
   @Field({ nullable: true })
-  @Column({ nullable: true })
+  @Column({
+    nullable: true,
+    default: 'https://storage.googleapis.com/upload-file-c/06d76789329f40378962037b371373ca.jpg',
+  })
   avatar: string;
 
   @Field(() => UserProfile)
@@ -46,10 +50,14 @@ export default class User extends Model {
   profile?: UserProfile;
 
   @Field(() => [Post])
-  @OneToMany(() => Post, (post) => post.user, { nullable: true })
+  @OneToMany(() => Post, (post) => post.user, { nullable: true, cascade: true })
   posts: Post[];
 
+  @Field(() => [PostLike])
+  @OneToMany(() => PostLike, (postLike) => postLike.user, { nullable: true, cascade: true })
+  postLike: PostLike[];
+
   @Field(() => Comment, { nullable: true })
-  @OneToOne(() => Comment, (comment) => comment.user, { nullable: true })
+  @OneToOne(() => Comment, (comment) => comment.author, { nullable: true, cascade: true })
   comment: Comment;
 }

@@ -8,6 +8,18 @@ import User from './User';
 export default class UserProfile extends Model {
   @Column()
   @Field()
+  workAt: string;
+
+  @Column()
+  @Field()
+  liveAt: string;
+
+  @Column()
+  @Field()
+  form: string;
+
+  @Column()
+  @Field()
   address: string;
 
   @Column()
@@ -26,6 +38,6 @@ export default class UserProfile extends Model {
   @OneToOne(() => User, (user) => user.profile, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn()
   user: User;
 }

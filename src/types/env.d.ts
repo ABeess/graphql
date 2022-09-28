@@ -12,6 +12,7 @@ declare namespace NodeJS {
     PATH_SECRET_STORAGE: string;
     NAME_STORAGE: string;
     NODE_ENV: string;
+    SESSION_NAME: string;
     CLOUDINARY_CLOUD_NAME: string;
     CLOUDINARY_API_KEY: string;
     CLOUDINARY_API_SECRET: string;

@@ -19,7 +19,7 @@ export default class Image extends Model {
   url: string;
 
   @Field(() => Post)
-  @ManyToOne(() => Post, (post) => post.image, { nullable: true })
+  @ManyToOne(() => Post, (post) => post.image, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn()
   post: Post;
 }
