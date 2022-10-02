@@ -42,7 +42,7 @@ const main = async (): Promise<void> => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        domain: 'abeesdev.site',
+        // domain: 'abeesdev.site',
       },
       store: new RedisStore({ client: redis }),
       secret: String(process.env.SESSION_SECRET),
@@ -60,7 +60,7 @@ const main = async (): Promise<void> => {
   const wsServer = new WebSocketServer({
     server: httpServer,
     path: '/graphql',
-    host: 'getway.abeesdev.site',
+    // host: 'getway.abeesdev.site',
   });
 
   const serverCleanup = useServer(
