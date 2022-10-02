@@ -16,7 +16,7 @@ jobs:
             cd /home/github/graphql
             sudo rm -rf /home/github/graphql/dist
             sudo git checkout production
-            sudo git pull
+            sudo git pull origin production
             sudo docker-compose rm -s -v -f graphql
             sudo docker-compose up -d
             
