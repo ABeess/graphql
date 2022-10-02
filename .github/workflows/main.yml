@@ -14,7 +14,6 @@ jobs:
           username: ${{secrets.SSH_USER_NAME}}
           script: |
             cd /home/github/graphql
-            sudo rm -rf /home/github/graphql/dist
             sudo git checkout production
             sudo git pull
             sudo docker-compose rm -s -v -f graphql
