@@ -59,7 +59,7 @@ const main = async (): Promise<void> => {
 
   const wsServer = new WebSocketServer({
     server: httpServer,
-    path: '/graphql',
+    path: '/subscriptions',
     // host: 'getway.abeesdev.site',
   });
 
