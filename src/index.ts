@@ -60,6 +60,7 @@ const main = async (): Promise<void> => {
   const wsServer = new WebSocketServer({
     server: httpServer,
     path: '/graphql',
+    host: 'getway.abeesdev.site',
   });
 
   const serverCleanup = useServer(
