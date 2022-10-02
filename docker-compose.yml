@@ -1,0 +1,71 @@
+version: '3.3'
+services:
+  postgres:
+    image: postgres:13.1
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-q', '-d', 'postgres', '-U']
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=abees
+      - APP_DB_USER=postgres
+      - APP_DB_PASS=abees
+      - APP_DB_NAME=production
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d/
+    ports:
+      - 5432:5432
+    networks:
+      - proxy
+  server:
+    image: node:16-alpine
+    container_name: server
+    command: sh -c "yarn install --frozen-lockfile  && yarn build && yarn start"
+    volumes:
+      - ./:/server
+    working_dir: /server
+    ports:
+      - '3080:3080'
+    restart: 'always'
+    networks:
+      - proxy
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: abeesdevjs@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: abees
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+
+    ports:
+      - '5050:80'
+    logging:
+      driver: 'none'
+
+    restart: unless-stopped
+    networks:
+      - proxy
+  redis:
+    image: 'redis:5.0.8-alpine'
+    container_name: 'redis'
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ['CMD-SHELL', "sh -c 'redis-cli PING'"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: 'on-failure'
+    networks:
+      - proxy
+networks:
+  proxy:
+    driver: bridge
+volumes:
+  pgadmin:
