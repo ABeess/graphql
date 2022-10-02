@@ -25,8 +25,8 @@ services:
     container_name: server
     command: sh -c "yarn install --frozen-lockfile  && yarn build && yarn start"
     volumes:
-      - ./:/server
-    working_dir: /server
+      - ./:/usr/src/graphql
+    working_dir: /usr/src/graphql
     ports:
       - '3080:3080'
     restart: 'always'
