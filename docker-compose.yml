@@ -28,7 +28,7 @@ services:
       - ./:/usr/src/graphql
     working_dir: /usr/src/graphql
     ports:
-      - '3080:3080'
+      - '3089:3089'
     restart: 'always'
     networks:
       - proxy
