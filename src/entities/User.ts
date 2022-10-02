@@ -43,7 +43,7 @@ export default class User extends Model {
   })
   avatar: string;
 
-  @Field(() => UserProfile)
+  @Field(() => UserProfile, { nullable: true })
   @OneToOne(() => UserProfile, (userProfile) => userProfile.user, {
     cascade: true,
   })

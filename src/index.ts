@@ -64,9 +64,6 @@ const main = async (): Promise<void> => {
   const serverCleanup = useServer(
     {
       schema,
-      onConnect: async (ctx) => {
-        console.log(ctx.connectionParams);
-      },
     },
     wsServer
   );

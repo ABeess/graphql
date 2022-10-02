@@ -6,7 +6,7 @@ import {
   PostLikeMutationResponse,
   PostLikeQueryResponse,
   UnlikePostMutationResponse,
-} from '../types/response';
+} from '../response/PostResponse';
 
 import { generateError } from '../utils/responseError';
 
@@ -77,8 +77,6 @@ export class PostLikeResolver {
           })
           .returning('*')
           .execute();
-
-        console.log(updateLike);
 
         return {
           code: 200,

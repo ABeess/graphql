@@ -5,18 +5,26 @@ import User from './User';
 
 @Entity()
 @ObjectType()
-export class Friendship extends Model {
-  @Field(() => User)
+export class Notification extends Model {
+  @Field()
+  @Column()
+  content: string;
+
+  @Field()
   @ManyToOne(() => User)
   @JoinColumn()
-  addressee: User;
+  owner: User;
 
-  @Field(() => User)
+  @Field()
   @ManyToOne(() => User)
   @JoinColumn()
   requester: User;
 
   @Field()
+  @Column()
+  type: string;
+
+  @Field()
   @Column({ default: false })
-  accepted: boolean;
+  read: boolean;
 }

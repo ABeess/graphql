@@ -4,7 +4,7 @@ import { PostInput } from '../inputs/CreateBookInput';
 import { ImageInput } from '../inputs/ImageInput';
 import { QueryInput } from '../inputs/QueryInput';
 import { authentication } from '../middleware/authentication';
-import { AllPostResponse, PostResponse } from '../types/response';
+import { AllPostResponse, PostResponse } from '../response/PostResponse';
 import { queryGenerate } from '../utils/queryGenerate';
 
 @Resolver()

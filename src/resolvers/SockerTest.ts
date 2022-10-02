@@ -1,6 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
 import { Arg, Field, Mutation, ObjectType, Resolver, Root, Subscription } from 'type-graphql';
-import User from '../entities/User';
 import { pubsub } from '../utils/pubsub';
 
 @ObjectType()
@@ -17,15 +16,14 @@ export class WebSocketServer {
       () => {
         return pubsub.asyncIterator(['notic', 'notic4']);
       },
-      async (root, args, context) => {
-        const user = (await User.find({})).map((item) => item.id);
-
-        console.log(user.includes('be30036a-35e1-4dd0-b83c-6eefb11be35b'));
+      async (payload, args) => {
+        console.log(args);
+        console.log(payload);
         return args.room === '1';
       }
     ),
   })
-  listenTest(@Root() { date }: SocketReturn, @Arg('room') room: string): SocketReturn {
+  listenTest(@Root() { date }: SocketReturn, @Arg('room') _room: string): SocketReturn {
     return { date };
   }
 

@@ -1,23 +1,33 @@
-// import { Field, ObjectType } from 'type-graphql';
-// import User from '../entities/User';
-// import { BaseResponse } from './BaseResponse';
+import { Field, ObjectType } from 'type-graphql';
+import User from '../entities/User';
+import { BaseResponse } from './BaseResponse';
 
-// @ObjectType({ implements: BaseResponse })
-// export class UserResponse implements BaseResponse {
-//   code: number;
+@ObjectType({ implements: BaseResponse })
+export class UserResponse implements BaseResponse {
+  code: number;
 
-//   message: string;
+  message: string;
 
-//   @Field(() => User, { nullable: true })
-//   user?: Partial<User>;
+  @Field(() => User, { nullable: true })
+  user?: Partial<User>;
 
-//   @Field(() => String, { nullable: true })
-//   accessToken?: string;
-// }
+  @Field(() => String, { nullable: true })
+  accessToken?: string;
+}
 
-// @ObjectType({ implements: BaseResponse })
-// export class UserLogoutResponse implements BaseResponse {
-//   code: number;
+@ObjectType({ implements: BaseResponse })
+export class UserLogoutResponse implements BaseResponse {
+  code: number;
 
-//   message: string;
-// }
+  message: string;
+}
+
+@ObjectType({ implements: BaseResponse })
+export class UserNotCurrentResponse implements BaseResponse {
+  code: number;
+
+  message: string;
+
+  @Field(() => [User], { nullable: true })
+  users?: Partial<User[]>;
+}

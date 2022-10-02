@@ -5,8 +5,8 @@ import { User } from '../entities/index';
 import { LoginInput } from '../inputs/LoginInput';
 import { RegisterInput } from '../inputs/RegisterInput';
 import { Conflict, NotfoundError, UnauthorizedError } from '../lib/errorHandle';
+import { UserLogoutResponse, UserResponse } from '../response/UserResponse';
 import { Context, UseJWTPayload } from '../types/index';
-import { UserLogoutResponse, UserResponse } from '../types/response';
 import { generateToken } from '../utils/jwtManger';
 import { generateError } from '../utils/responseError';
 
@@ -52,7 +52,6 @@ export default class UserResolver {
     try {
       const existingUser = await User.findOne({ where: { email } });
 
-      console.log(existingUser);
       if (!existingUser) throw new NotfoundError('Email and password incorrect');
 
       const passwordValid = await argon2.verify(existingUser.password, password);

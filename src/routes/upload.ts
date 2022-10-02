@@ -14,7 +14,6 @@ Router.post('/upload-single', upload.single('file'), async (req: Request, res: R
   try {
     const file = req.file;
 
-    console.log(file);
     if (!file) {
       throw new BadRequestRest('Missing the file to upload');
     }

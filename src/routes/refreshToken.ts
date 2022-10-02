@@ -20,8 +20,6 @@ Router.post('/refreshToken', async (req: Request, res: Response) => {
       throw new UnauthorizedRest('Token is not valid');
     }
 
-    console.log(payload);
-
     const existingUser = await User.findOne({
       where: {
         id: payload.sub,

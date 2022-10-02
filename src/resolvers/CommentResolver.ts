@@ -1,47 +1,36 @@
-import {
-  Arg,
-  Mutation,
-  PubSub,
-  PubSubEngine,
-  Query,
-  Resolver,
-  ResolverFilterData,
-  Root,
-  Subscription,
-  UseMiddleware,
-} from 'type-graphql';
+import { withFilter } from 'graphql-subscriptions';
+import { Arg, Mutation, Query, Resolver, Root, Subscription, UseMiddleware } from 'type-graphql';
 import Comment from '../entities/Comment';
 import ReplyCommentPost from '../entities/Reply';
 import { CommentInput, ReplyInput } from '../inputs/CommentInput';
 import { QueryInput } from '../inputs/QueryInput';
 import { authentication } from '../middleware/authentication';
-import { CommentListResponse, CommentResponse } from '../types/response';
+import { CommentPayload } from '../response/PayloadResponse';
+import { CommentListResponse } from '../response/PostResponse';
+import { pubsub } from '../utils/pubsub';
 import { queryGenerate } from '../utils/queryGenerate';
-import { generateError } from '../utils/responseError';
 
 @Resolver()
 export default class CommentResolver {
   @Subscription({
-    // topics: 'comment-post',
-    topics: ({ args }: ResolverFilterData) => {
-      return args.room;
-    },
-    // filter: ({ args, payload }: ResolverFilterData<CommentPayload>) =>
-    //   payload.type === 'comment'
-    //     ? args.room.includes(payload.comment.post.uuid)
-    //     : args.room.includes(payload.comment.uuid),
+    subscribe: withFilter(
+      () => pubsub.asyncIterator(['COMMENT_POST', 'REPLY_COMMENT']),
+      (payload: CommentPayload, args) => {
+        console.log(args);
+        return args.room === payload.room;
+      }
+    ),
   })
-  @UseMiddleware(authentication)
-  listenCommentPost(@Arg('room') _room: string, @Root() comment: Comment): Comment {
-    return comment;
+  listJoinCommentPost(@Arg('room') _room: string, @Root() payload: CommentPayload): CommentPayload {
+    return payload;
   }
 
-  @Mutation(() => CommentResponse)
+  @Mutation(() => Boolean)
+  @UseMiddleware(authentication)
   async createComment(
-    @PubSub() pubsub: PubSubEngine,
     @Arg('commentInput') commentInput: CommentInput,
-    @Arg('room', { nullable: true }) room: string
-  ): Promise<CommentResponse> {
+    @Arg('room') room: string
+  ): Promise<Boolean> {
     try {
       const newComment = Comment.create({
         message: commentInput.message,
@@ -51,36 +40,25 @@ export default class CommentResolver {
 
       await newComment.save();
 
-      await pubsub.publish(room, newComment);
+      await pubsub.publish('COMMENT_POST', {
+        data: newComment,
+        room,
+        type: 'comment',
+        commentId: newComment.id,
+      });
 
-      return {
-        code: 200,
-        message: 'createComment',
-        comment: newComment,
-      };
+      return true;
     } catch (error) {
-      console.log(error);
-      return generateError(error);
+      return false;
     }
   }
 
-  @Subscription({
-    topics: ({ args }: ResolverFilterData) => {
-      return args.room;
-    },
-  })
-  @UseMiddleware(authentication)
-  listenReply(@Arg('room') _room: string, @Root() reply: ReplyCommentPost): ReplyCommentPost {
-    return reply;
-  }
-
-  @Mutation(() => CommentResponse)
+  @Mutation(() => Boolean)
   @UseMiddleware(authentication)
   async replyComment(
-    @PubSub() pubsub: PubSubEngine,
     @Arg('room') room: string,
     @Arg('replyInput') replyInput: ReplyInput
-  ): Promise<CommentResponse> {
+  ): Promise<boolean> {
     try {
       const reply = ReplyCommentPost.create({
         author: replyInput.author,
@@ -90,16 +68,16 @@ export default class CommentResolver {
 
       await reply.save();
 
-      await pubsub.publish(room, reply);
+      await pubsub.publish('REPLY_COMMENT', {
+        room,
+        data: reply,
+        type: 'reply',
+        commentId: reply.parent.id,
+      });
 
-      return {
-        code: 200,
-        message: 'Reply',
-        reply: reply,
-      };
+      return true;
     } catch (error) {
-      console.log(error);
-      return generateError(error);
+      return false;
     }
   }
 
@@ -130,7 +108,7 @@ export default class CommentResolver {
       comment: commentList,
       totalCount: count,
       totalPage: Math.ceil(count / Number(limit)),
-      perPage: limit,
+      perPage: count < Number(limit) ? 1 : limit,
       page: page,
     };
   }
