@@ -29,7 +29,7 @@ const main = async (): Promise<void> => {
 
   app.use(
     cors({
-      origin: ['http://localhost:3090', 'http://localhost:3030'],
+      origin: [process.env.CLIENT_URL, 'http://localhost:3030'],
       credentials: true,
     })
   );
