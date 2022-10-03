@@ -29,7 +29,7 @@ const main = async (): Promise<void> => {
 
   app.use(
     cors({
-      origin: ['http://localhost:3090', 'http://localhost:3030'],
+      origin: [process.env.CLIENT_URL, 'http://localhost:3030'],
       credentials: true,
     })
   );
@@ -42,6 +42,7 @@ const main = async (): Promise<void> => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
+        domain: 'abeesdev.site',
       },
       store: new RedisStore({ client: redis }),
       secret: String(process.env.SESSION_SECRET),

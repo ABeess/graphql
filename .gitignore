@@ -1,4 +1,6 @@
 dist
 node_modules
 .vs-code
-weighty-droplet-357309-d67e3ea0b5f4.json
+# .env
+db
+# weighty-droplet-357309-d67e3ea0b5f4.json
