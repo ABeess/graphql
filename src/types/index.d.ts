@@ -5,6 +5,8 @@ import { Stream } from 'stream';
 export type MulterFile = Express.Multer.File;
 export type MulterFiles = Express.Multer.File[];
 
+export type Maybe<T> = T | null;
+
 export type UseJWTPayload = JwtPayload & {
   sub: number;
 };

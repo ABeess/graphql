@@ -202,4 +202,28 @@ export class FriendshipResolver {
       page: page,
     };
   }
+
+  @Query(() => Boolean)
+  async getFriends(@Arg('userId') id: string) {
+    const listFriend = await Friendship.find({
+      where: [
+        {
+          requester: { id },
+          accepted: true,
+        },
+        {
+          addressee: { id },
+          accepted: true,
+        },
+      ],
+      relations: ['addressee', 'requester'],
+    });
+
+    console.log(listFriend);
+    const listId = listFriend.map((item) =>
+      item.requester.id === id ? item.addressee.id : item.requester.id
+    );
+    console.log(listId);
+    return true;
+  }
 }

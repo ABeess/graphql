@@ -1,5 +1,6 @@
 import { Field, ObjectType } from 'type-graphql';
 import User from '../entities/User';
+import UserProfile from '../entities/UserProfile';
 import { BaseResponse } from './BaseResponse';
 
 @ObjectType({ implements: BaseResponse })
@@ -30,4 +31,25 @@ export class UserNotCurrentResponse implements BaseResponse {
 
   @Field(() => [User], { nullable: true })
   users?: Partial<User[]>;
+}
+
+@ObjectType({ implements: BaseResponse })
+export class UpdateUserProfileResponse implements BaseResponse {
+  code: number;
+  message: string;
+
+  @Field(() => UserProfile, { nullable: true })
+  profile?: UserProfile;
+
+  @Field(() => User, { nullable: true })
+  user?: User;
+}
+
+@ObjectType({ implements: BaseResponse })
+export class UploadAvatarResponse implements BaseResponse {
+  code: number;
+  message: string;
+
+  @Field({ nullable: true })
+  url?: string;
 }

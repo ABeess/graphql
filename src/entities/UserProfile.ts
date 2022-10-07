@@ -8,19 +8,19 @@ import User from './User';
 export default class UserProfile extends Model {
   @Column()
   @Field()
-  workAt: string;
-
-  @Column()
-  @Field()
   liveAt: string;
 
   @Column()
   @Field()
-  form: string;
+  ward: string;
 
   @Column()
   @Field()
-  address: string;
+  province: string;
+
+  @Column()
+  @Field()
+  district: string;
 
   @Column()
   @Field()
@@ -33,6 +33,14 @@ export default class UserProfile extends Model {
   @Column()
   @Field()
   phoneNumber: string;
+
+  @Column()
+  @Field()
+  story: string;
+
+  @Column({ nullable: true })
+  @Field()
+  thumbnail: string;
 
   @Field(() => User)
   @OneToOne(() => User, (user) => user.profile, {
