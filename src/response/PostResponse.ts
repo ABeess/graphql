@@ -51,7 +51,7 @@ export class AllCommentResponse implements BaseResponse {
 @ObjectType({ implements: QueryResponse })
 export class CommentListResponse implements QueryResponse {
   @Field(() => [Comment], { nullable: true })
-  comment?: Comment[];
+  comments?: Comment[];
 
   totalCount?: number;
   limit?: number;

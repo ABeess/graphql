@@ -1,7 +1,7 @@
 import { Field, ObjectType } from 'type-graphql';
 import User from '../entities/User';
 import UserProfile from '../entities/UserProfile';
-import { BaseResponse } from './BaseResponse';
+import { BaseResponse, QueryResponse } from './BaseResponse';
 
 @ObjectType({ implements: BaseResponse })
 export class UserResponse implements BaseResponse {
@@ -21,6 +21,14 @@ export class UserLogoutResponse implements BaseResponse {
   code: number;
 
   message: string;
+}
+
+@ObjectType({ implements: BaseResponse })
+export class ProfileUserResponse implements BaseResponse {
+  code: number;
+  message: string;
+  @Field(() => User, { nullable: true })
+  user?: User;
 }
 
 @ObjectType({ implements: BaseResponse })
@@ -52,4 +60,15 @@ export class UploadAvatarResponse implements BaseResponse {
 
   @Field({ nullable: true })
   url?: string;
+}
+
+@ObjectType({ implements: QueryResponse })
+export class GetFriendResponse implements QueryResponse {
+  totalCount?: number;
+  totalPage?: number;
+  perPage?: number;
+  page?: number;
+
+  @Field(() => [User], { nullable: true })
+  friends: User[];
 }

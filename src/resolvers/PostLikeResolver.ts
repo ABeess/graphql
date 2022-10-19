@@ -15,7 +15,7 @@ export class PostLikeResolver {
   @Query(() => PostLikeQueryResponse)
   @UseMiddleware(authentication)
   async getLikeByPost(
-    @Arg('likeInput') { userId, postId }: PostLikeQueryInput
+    @Arg('data') { userId, postId }: PostLikeQueryInput
   ): Promise<PostLikeQueryResponse> {
     try {
       const existingUserLike = await PostLike.findOneBy({
@@ -56,8 +56,8 @@ export class PostLikeResolver {
 
   @Mutation(() => PostLikeMutationResponse)
   @UseMiddleware(authentication)
-  async createPostLike(
-    @Arg('likeInput') { user, post, type }: PostLikeMutationInput
+  async likePost(
+    @Arg('data') { user, post, type }: PostLikeMutationInput
   ): Promise<PostLikeMutationResponse> {
     try {
       const existingLike = await PostLike.findOneBy({
@@ -112,9 +112,10 @@ export class PostLikeResolver {
   @Mutation(() => UnlikePostMutationResponse)
   @UseMiddleware(authentication)
   async unLikePost(
-    @Arg('likeInput') { userId, postId }: PostLikeQueryInput
+    @Arg('data') { userId, postId }: PostLikeQueryInput
   ): Promise<UnlikePostMutationResponse> {
     try {
+      console.log(userId);
       await PostLike.delete({
         post: {
           id: postId,

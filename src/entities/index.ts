@@ -1,3 +1,12 @@
 export { default as User } from './User';
 export { default as Post } from './Post';
+export { default as Comment } from './Comment';
+export { default as CommentLikes } from './CommentLikes';
+export { default as Friendship } from './Friendship';
 export { default as Image } from './Image';
+export { default as Notification } from './Notification';
+export { default as PostLike } from './PostLike';
+export { default as Reply } from './Reply';
+export { default as Role } from './Role';
+export { default as UserProfile } from './UserProfile';
+export { default as UserRoom } from './UserRoom';

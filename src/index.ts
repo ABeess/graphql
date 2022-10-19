@@ -10,10 +10,9 @@ import connectRedis from 'connect-redis';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
-import { useServer } from 'graphql-ws/lib/use/ws';
 import { createServer } from 'http';
 import { buildSchema } from 'type-graphql';
-import { WebSocketServer } from 'ws';
+import { channel } from './channel';
 import { AppDataSource } from './lib/dataSource';
 import rootRouter from './routes/rootRouter';
 import { Context } from './types';
@@ -57,31 +56,33 @@ const main = async (): Promise<void> => {
     resolvers: [__dirname + '/resolvers/**/*.js'],
   });
 
-  const wsServer = new WebSocketServer({
-    server: httpServer,
-    path: '/graphql',
-  });
+  channel(httpServer);
 
-  const serverCleanup = useServer(
-    {
-      schema,
-    },
-    wsServer
-  );
+  // const wsServer = new WebSocketServer({
+  //   server: httpServer,
+  //   path: '/graphql',
+  // });
+
+  // const serverCleanup = useServer(
+  //   {
+  //     schema,
+  //   },
+  //   wsServer
+  // );
 
   const apolloServer = new ApolloServer({
     schema,
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
-      {
-        async serverWillStart() {
-          return {
-            async drainServer() {
-              await serverCleanup.dispose();
-            },
-          };
-        },
-      },
+      // {
+      //   async serverWillStart() {
+      //     return {
+      //       async drainServer() {
+      //         await serverCleanup.dispose();
+      //       },
+      //     };
+      //   },
+      // },
 
       ApolloServerPluginLandingPageLocalDefault({ embed: true }),
       // ApolloServerPluginLandingPageGraphQLPlayground,

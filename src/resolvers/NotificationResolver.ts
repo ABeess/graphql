@@ -1,10 +1,11 @@
 import { Arg, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
-import { Notification } from '../entities/Notification';
+import Notification from '../entities/Notification';
 import { NotificationInput } from '../inputs/NotificationInput';
 import { QueryInput } from '../inputs/QueryInput';
 import { authentication } from '../middleware/authentication';
-import { NotificationQueryResponse } from '../response/NotificationResponse';
+import { MaskAsReadResponse, NotificationQueryResponse } from '../response/NotificationResponse';
 import { queryGenerate } from '../utils/queryGenerate';
+import { generateError } from '../utils/responseError';
 
 @Resolver()
 export default class NotificationResolver {
@@ -51,9 +52,11 @@ export default class NotificationResolver {
     };
   }
 
-  @Mutation(() => Boolean)
-  @UseMiddleware(authentication)
-  async markAsRead(@Arg('notificationInput') query: NotificationInput): Promise<boolean> {
+  @Mutation(() => MaskAsReadResponse)
+  // @UseMiddleware(authentication)
+  async markAsRead(
+    @Arg('notificationInput') query: NotificationInput
+  ): Promise<MaskAsReadResponse> {
     try {
       const { type, notificationId = '', ownerId = '' } = query;
 
@@ -64,7 +67,10 @@ export default class NotificationResolver {
             read: true,
           }
         );
-        return true;
+        return {
+          code: 200,
+          message: 'Read single',
+        };
       }
       if (type === 'multiple' && ownerId) {
         await Notification.update(
@@ -73,12 +79,18 @@ export default class NotificationResolver {
             read: true,
           }
         );
-        return true;
+        return {
+          code: 200,
+          message: 'Read multiple',
+        };
       }
 
-      return false;
+      return {
+        code: 400,
+        message: 'Missing the params',
+      };
     } catch (error) {
-      return false;
+      return generateError(error);
     }
   }
 }

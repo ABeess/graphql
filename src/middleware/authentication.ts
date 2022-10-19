@@ -7,8 +7,9 @@ export const authentication: MiddlewareFn<Context> = ({ context }, next) => {
   try {
     const authorization = context.req.header('Authorization');
     const accessToken = authorization && authorization.split(' ')[1];
+
     if (!accessToken) {
-      throw new AuthenticationError('Not authenticated to perform request');
+      throw new Error('Not authenticated to perform request');
     }
     verify(accessToken, process.env.ACCESS_TOKEN_SECRET as Secret, (error, payload) => {
       if (error) {

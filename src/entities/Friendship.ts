@@ -5,7 +5,7 @@ import User from './User';
 
 @Entity()
 @ObjectType()
-export class Friendship extends Model {
+export default class Friendship extends Model {
   @Field(() => User)
   @ManyToOne(() => User)
   @JoinColumn()

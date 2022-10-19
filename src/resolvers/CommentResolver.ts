@@ -1,89 +1,75 @@
-import { withFilter } from 'graphql-subscriptions';
-import { Arg, Mutation, Query, Resolver, Root, Subscription, UseMiddleware } from 'type-graphql';
+import { Arg, Mutation, Query, Resolver, UseMiddleware } from 'type-graphql';
 import Comment from '../entities/Comment';
 import ReplyCommentPost from '../entities/Reply';
 import { CommentInput, ReplyInput } from '../inputs/CommentInput';
 import { QueryInput } from '../inputs/QueryInput';
 import { authentication } from '../middleware/authentication';
-import { CommentPayload } from '../response/PayloadResponse';
+import { CreateCommentResponse, ReplyResponse } from '../response/CommentResponse';
 import { CommentListResponse } from '../response/PostResponse';
-import { pubsub } from '../utils/pubsub';
 import { queryGenerate } from '../utils/queryGenerate';
+import { generateError } from '../utils/responseError';
 
 @Resolver()
 export default class CommentResolver {
-  @Subscription({
-    subscribe: withFilter(
-      () => pubsub.asyncIterator(['COMMENT_POST', 'REPLY_COMMENT']),
-      (payload: CommentPayload, args) => {
-        console.log(args);
-        return args.room === payload.room;
-      }
-    ),
-  })
-  listJoinCommentPost(@Arg('room') _room: string, @Root() payload: CommentPayload): CommentPayload {
-    return payload;
-  }
-
-  @Mutation(() => Boolean)
+  @Mutation(() => CreateCommentResponse)
   @UseMiddleware(authentication)
   async createComment(
-    @Arg('commentInput') commentInput: CommentInput,
-    @Arg('room') room: string
-  ): Promise<Boolean> {
+    @Arg('data') { message, author, post }: CommentInput
+  ): Promise<CreateCommentResponse> {
     try {
       const newComment = Comment.create({
-        message: commentInput.message,
-        author: commentInput.author,
-        post: commentInput.post,
+        message: message,
+        author: author,
+        post: post,
       });
 
       await newComment.save();
+      const { post: newPost, ...other } = newComment;
 
-      await pubsub.publish('COMMENT_POST', {
-        data: newComment,
-        room,
+      _io.to(post?.id as string).emit('POST_COMMENT', {
+        data: other,
         type: 'comment',
-        commentId: newComment.id,
       });
 
-      return true;
+      return {
+        code: 200,
+        message: 'Comment Post',
+      };
     } catch (error) {
-      return false;
+      return generateError(error);
     }
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => ReplyResponse)
   @UseMiddleware(authentication)
   async replyComment(
-    @Arg('room') room: string,
-    @Arg('replyInput') replyInput: ReplyInput
-  ): Promise<boolean> {
+    @Arg('data') { author, message, comment, postId }: ReplyInput
+  ): Promise<ReplyResponse> {
     try {
       const reply = ReplyCommentPost.create({
-        author: replyInput.author,
-        message: replyInput.message,
-        parent: replyInput.comment,
+        author: author,
+        message: message,
+        parent: comment,
       });
 
       await reply.save();
 
-      await pubsub.publish('REPLY_COMMENT', {
-        room,
+      _io.to(postId).emit('POST_COMMENT', {
         data: reply,
         type: 'reply',
-        commentId: reply.parent.id,
       });
-
-      return true;
+      return {
+        code: 200,
+        message: 'Reply comment',
+      };
     } catch (error) {
-      return false;
+      return generateError(error);
     }
   }
 
   @Query(() => CommentListResponse)
   @UseMiddleware(authentication)
-  async comments(
+  async getComment(
     @Arg('postId') id: string,
     @Arg('query', { nullable: true }) query: QueryInput
   ): Promise<CommentListResponse> {
@@ -105,7 +91,7 @@ export default class CommentResolver {
     });
 
     return {
-      comment: commentList,
+      comments: commentList,
       totalCount: count,
       totalPage: Math.ceil(count / Number(limit)),
       perPage: count < Number(limit) ? 1 : limit,

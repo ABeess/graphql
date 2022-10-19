@@ -16,5 +16,5 @@ RUN yarn build
 ENV NODE_ENV production
 
 EXPOSE 3089
-CMD [ "node", "dist/index.js" ]
+CMD [ "yarn", "start" ]
 USER node

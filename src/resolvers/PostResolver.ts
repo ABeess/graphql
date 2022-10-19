@@ -5,6 +5,7 @@ import { ImageInput } from '../inputs/ImageInput';
 import { QueryInput } from '../inputs/QueryInput';
 import { authentication } from '../middleware/authentication';
 import { AllPostResponse, PostResponse } from '../response/PostResponse';
+import { formatDate } from '../utils/formatDate';
 import { queryGenerate } from '../utils/queryGenerate';
 
 @Resolver()
@@ -45,10 +46,11 @@ export default class PostResolver {
   @Mutation(() => PostResponse)
   @UseMiddleware(authentication)
   async createPost(
-    @Arg('postInput') postInput: PostInput,
-    @Arg('imageInput', () => [ImageInput]) imageInput: ImageInput[]
+    @Arg('post') postInput: PostInput,
+    @Arg('images', () => [ImageInput]) imageInput: ImageInput[]
   ): Promise<PostResponse> {
     try {
+      const { user, ...other } = postInput;
       const image = await Image.createQueryBuilder()
         .insert()
         .values(imageInput)
@@ -56,8 +58,8 @@ export default class PostResolver {
         .execute();
 
       const post = Post.create({
-        ...postInput,
-        user: postInput.user,
+        ...other,
+        user: formatDate(user),
         image: image.raw,
       });
 

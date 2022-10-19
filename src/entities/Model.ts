@@ -5,11 +5,11 @@ import { BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn 
 export default class Model extends BaseEntity {
   @Field()
   @CreateDateColumn()
-  createdAt: string;
+  createdAt: Date;
 
   @Field()
   @UpdateDateColumn()
-  updatedAt: string;
+  updatedAt: Date;
 
   @Field({ nullable: true })
   @PrimaryGeneratedColumn('uuid')

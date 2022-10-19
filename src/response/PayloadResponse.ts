@@ -1,6 +1,6 @@
 import { ClassType, Field, ObjectType } from 'type-graphql';
 import Comment from '../entities/Comment';
-import { Notification } from '../entities/Notification';
+import Notification from '../entities/Notification';
 import ReplyCommentPost from '../entities/Reply';
 
 export function ServiceResponse<T>(cls: ClassType<T>) {

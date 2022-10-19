@@ -31,4 +31,7 @@ export class ReplyInput implements Partial<Comment> {
 
   @Field(() => GraphQLJSONObject)
   comment?: Comment;
+
+  @Field()
+  postId: string;
 }

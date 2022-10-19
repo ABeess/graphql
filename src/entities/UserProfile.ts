@@ -39,7 +39,7 @@ export default class UserProfile extends Model {
   story: string;
 
   @Column({ nullable: true })
-  @Field()
+  @Field({ nullable: true })
   thumbnail: string;
 
   @Field(() => User)

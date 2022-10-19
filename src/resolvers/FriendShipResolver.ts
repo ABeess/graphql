@@ -1,9 +1,9 @@
-import { withFilter } from 'graphql-subscriptions';
-import { Arg, Mutation, Query, Resolver, Root, Subscription } from 'type-graphql';
+import { Arg, Mutation, Query, Resolver } from 'type-graphql';
 import { In, Not } from 'typeorm';
-import { Friendship } from '../entities/Friendship';
-import { Notification } from '../entities/Notification';
+import Friendship from '../entities/Friendship';
+import Notification from '../entities/Notification';
 import User from '../entities/User';
+import UserRoom from '../entities/UserRoom';
 import { AddFriendInput } from '../inputs/FriendShipInput';
 import { QueryInput } from '../inputs/QueryInput';
 import {
@@ -11,17 +11,20 @@ import {
   FriendShipRecommendResponse,
   FriendShipRequestResponse,
 } from '../response/FriendShipResponse';
-import { FriendshipPayload } from '../response/PayloadResponse';
-import { pubsub } from '../utils/pubsub';
+import { GetFriendResponse } from '../response/UserResponse';
 import { queryGenerate } from '../utils/queryGenerate';
 import { generateError } from '../utils/responseError';
 
 @Resolver()
 export class FriendshipResolver {
   @Mutation(() => AddFriendMutationResponse)
-  async addFriendMutation(@Arg('data') data: AddFriendInput): Promise<AddFriendMutationResponse> {
+  async addFriend(@Arg('data') data: AddFriendInput): Promise<AddFriendMutationResponse> {
     try {
       const { type, addressee, requester } = data;
+
+      const userRoom = await UserRoom.findOneBy({
+        userId: addressee.id,
+      });
 
       if (type === 'accepted') {
         await Friendship.update(
@@ -47,7 +50,7 @@ export class FriendshipResolver {
 
         await newNotification.save();
 
-        await pubsub.publish('SEND_FRIEND_REQUEST', { data: newNotification, room: addressee.id });
+        _io.to(userRoom?.room as string).emit('NOTIFICATION', newNotification);
 
         return {
           code: 200,
@@ -71,7 +74,9 @@ export class FriendshipResolver {
 
       await newNotification.save();
 
-      await pubsub.publish('SEND_FRIEND_REQUEST', { data: newNotification, room: addressee.id });
+      // await pubsub.publish('SEND_FRIEND_REQUEST', { data: newNotification, room: addressee.id });
+
+      _io.to(userRoom?.room as string).emit('NOTIFICATION', newNotification);
 
       return {
         code: 201,
@@ -81,21 +86,6 @@ export class FriendshipResolver {
       console.log(error);
       return generateError(error);
     }
-  }
-
-  @Subscription({
-    subscribe: withFilter(
-      () => pubsub.asyncIterator(['SEND_FRIEND_REQUEST']),
-      (payload: FriendshipPayload, args) => {
-        return args.room === payload.room;
-      }
-    ),
-  })
-  littenJoinRoomRequest(
-    @Root() payload: FriendshipPayload,
-    @Arg('room') _room: string
-  ): Notification {
-    return payload.data;
   }
 
   @Query(() => FriendShipRequestResponse)
@@ -151,6 +141,8 @@ export class FriendshipResolver {
       take: limit,
     });
 
+    console.log(friendRequest);
+
     return {
       totalCount,
       totalPage: Math.ceil(totalCount / Number(limit)),
@@ -199,12 +191,16 @@ export class FriendshipResolver {
       totalCount: totalCount,
       totalPage: Math.ceil(totalCount / Number(limit)),
       perPage: totalCount < Number(limit) ? 1 : limit,
-      page: page,
+      page,
     };
   }
 
-  @Query(() => Boolean)
-  async getFriends(@Arg('userId') id: string) {
+  @Query(() => GetFriendResponse)
+  async getFriends(
+    @Arg('userId') id: string,
+    @Arg('query', { nullable: true }) query: QueryInput
+  ): Promise<GetFriendResponse> {
+    const { page, limit, skip } = queryGenerate(query);
     const listFriend = await Friendship.find({
       where: [
         {
@@ -217,13 +213,26 @@ export class FriendshipResolver {
         },
       ],
       relations: ['addressee', 'requester'],
+      take: limit,
+      skip,
     });
 
-    console.log(listFriend);
-    const listId = listFriend.map((item) =>
+    const listFriendId = listFriend.map((item) =>
       item.requester.id === id ? item.addressee.id : item.requester.id
     );
-    console.log(listId);
-    return true;
+
+    const [userFriends, totalCount] = await User.findAndCount({
+      where: {
+        id: In([...new Set(listFriendId)]),
+      },
+    });
+
+    return {
+      friends: userFriends,
+      totalCount,
+      totalPage: Math.ceil(totalCount / Number(limit)),
+      perPage: totalCount < Number(limit) ? 1 : limit,
+      page,
+    };
   }
 }

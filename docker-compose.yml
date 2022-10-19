@@ -13,7 +13,7 @@ services:
       - POSTGRES_PASSWORD=abees
       - APP_DB_USER=postgres
       - APP_DB_PASS=abees
-      - APP_DB_NAME=production
+      - APP_DB_NAME=postgres
     volumes:
       - ./db:/docker-entrypoint-initdb.d/
     ports:

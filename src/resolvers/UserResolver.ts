@@ -1,17 +1,16 @@
 import { isEmpty } from 'lodash';
 import { Arg, Mutation, Query, Resolver } from 'type-graphql';
 import { In, Not } from 'typeorm';
-import { Friendship } from '../entities/Friendship';
+import Friendship from '../entities/Friendship';
 import User from '../entities/User';
 import UserProfile from '../entities/UserProfile';
-import { UserInput, UserProfileInput } from '../inputs/UserProfileInput';
+import { UserProfileInput } from '../inputs/UserProfileInput';
 import { HoverCardResponse } from '../response/HoverCardResponse';
 import {
+  ProfileUserResponse,
   UpdateUserProfileResponse,
-  UploadAvatarResponse,
   UserNotCurrentResponse,
 } from '../response/UserResponse';
-import { Maybe } from '../types/index';
 import { generateError } from '../utils/responseError';
 
 @Resolver()
@@ -83,79 +82,95 @@ export default class UserResolver {
     };
   }
 
-  @Query(() => User)
-  async getCurrentUser(@Arg('userId') id: string): Promise<Maybe<User>> {
-    return await User.findOne({
-      where: {
-        id,
-      },
-      relations: {
-        profile: true,
-      },
-    });
+  @Query(() => ProfileUserResponse)
+  async getProfileUser(@Arg('userId') id: string): Promise<ProfileUserResponse> {
+    try {
+      const existUser = await User.findOne({
+        where: {
+          id,
+        },
+        relations: {
+          profile: true,
+        },
+      });
+
+      if (!existUser) {
+        return {
+          code: 404,
+          message: 'User does not exist on the system',
+        };
+      }
+      return {
+        code: 200,
+        message: 'User Profile',
+        user: existUser,
+      };
+    } catch (error) {
+      return generateError(error);
+    }
   }
 
   @Mutation(() => UpdateUserProfileResponse)
   async updateProfile(@Arg('data') data: UserProfileInput): Promise<UpdateUserProfileResponse> {
-    const { firstName, lastName, user, ...other } = data;
+    try {
+      const { firstName, lastName, user, ...other } = data;
 
-    console.log(firstName);
-
-    const existProfile = await UserProfile.findOne({
-      where: {
-        user: {
-          id: user?.id,
+      const existProfile = await UserProfile.findOne({
+        where: {
+          user: {
+            id: user?.id,
+          },
         },
-      },
-    });
+      });
 
-    const userUpdate = await User.createQueryBuilder()
-      .update()
-      .where('id = :id', {
-        id: user?.id,
-      })
-      .set({
-        firstName,
-        lastName,
-      })
-      .returning('*')
-      .execute();
-
-    console.log(userUpdate);
-
-    if (existProfile) {
-      const updateProfile = await UserProfile.createQueryBuilder()
+      const userUpdate = await User.createQueryBuilder()
         .update()
-        .where('userId = :userId', {
-          userId: user?.id,
+        .where('id = :id', {
+          id: user?.id,
         })
-        .set(other)
+        .set({
+          firstName,
+          lastName,
+        })
         .returning('*')
         .execute();
 
-      console.log(updateProfile);
+      if (existProfile) {
+        const updateProfile = await UserProfile.createQueryBuilder()
+          .update()
+          .where('userId = :userId', {
+            userId: user?.id,
+          })
+          .set(other)
+          .returning('*')
+          .execute();
+
+        console.log(updateProfile);
+
+        return {
+          code: 200,
+          message: 'Update User Profile',
+          profile: updateProfile.raw[0],
+          user: userUpdate.raw[0],
+        };
+      }
+
+      const newProfile = UserProfile.create({
+        ...other,
+        user,
+      });
+
+      await newProfile.save();
 
       return {
-        code: 200,
+        code: 201,
         message: 'Update User Profile',
-        profile: updateProfile.raw[0],
+        profile: newProfile,
         user: userUpdate.raw[0],
       };
+    } catch (error) {
+      return generateError(error);
     }
-
-    const newProfile = UserProfile.create({
-      ...other,
-      user,
-    });
-
-    await newProfile.save();
-
-    return {
-      code: 201,
-      message: 'Update User Profile',
-      profile: newProfile,
-      user: userUpdate.raw[0],
-    };
   }
 
   @Mutation(() => Boolean)

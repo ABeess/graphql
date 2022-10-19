@@ -1,6 +1,6 @@
 import { GraphQLJSONObject } from 'graphql-type-json';
 import { Field, InputType } from 'type-graphql';
-import { Friendship } from '../entities/Friendship';
+import Friendship from '../entities/Friendship';
 import User from '../entities/User';
 
 @InputType()

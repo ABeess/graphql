@@ -17,14 +17,8 @@ export abstract class QueryResponse {
   totalPage?: number;
 
   @Field({ nullable: true })
-  limit?: number;
-
-  @Field({ nullable: true })
   perPage?: number;
 
   @Field({ nullable: true })
   page?: number;
-
-  @Field({ nullable: true })
-  skip?: number;
 }

@@ -1,30 +1,25 @@
 import { Field, ObjectType } from 'type-graphql';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import Conversation from './Conversation';
 import Model from './Model';
 import User from './User';
 
 @Entity()
 @ObjectType()
-export default class Notification extends Model {
-  @Field()
+export default class Message extends Model {
   @Column()
-  content: string;
+  @Field()
+  message: string;
 
   @Field()
   @ManyToOne(() => User)
   @JoinColumn()
-  owner: User;
+  sender: User;
 
   @Field()
-  @ManyToOne(() => User)
+  @ManyToOne(() => Conversation, (conversation) => conversation.id, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
-  requester: User;
-
-  @Field()
-  @Column()
-  type: string;
-
-  @Field()
-  @Column({ default: false })
-  read: boolean;
+  conversation: Conversation;
 }
