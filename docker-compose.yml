@@ -13,7 +13,7 @@ services:
       - POSTGRES_PASSWORD=abees
       - APP_DB_USER=postgres
       - APP_DB_PASS=abees
-      - APP_DB_NAME=postgres
+      - APP_DB_NAME=prod
     volumes:
       - ./db:/docker-entrypoint-initdb.d/
     ports:
@@ -24,9 +24,11 @@ services:
     image: node:16-alpine
     container_name: server
     command: sh -c "yarn install --frozen-lockfile  && yarn build && yarn start"
+    env_file:
+      - variables.env
     volumes:
-      - ./:/usr/src/graphql
-    working_dir: /usr/src/graphql
+      - ./:/src/server
+    working_dir: /src/server
     ports:
       - '3089:3089'
     restart: 'always'

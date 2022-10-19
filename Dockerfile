@@ -1,20 +1,12 @@
-FROM node:lts-alpine
+FROM node:lts as dependencies
 
-WORKDIR /usr/src/graphql
+WORKDIR /src/server
+COPY package.json yarn.lock ./
+RUN yarn  
 
+FROM node:lts as builder
 
-COPY package.json ./
-COPY yarn.lock ./
-
-RUN yarn
-
-COPY . .
-COPY .env.production .env
-
-RUN yarn build
-
-ENV NODE_ENV production
-
-EXPOSE 3089
-CMD [ "yarn", "start" ]
-USER node
+WORKDIR /src/server
+COPY . /src/server
+COPY --from=dependencies /src/server/node_modules ./node_modules
+RUN yarn build 
